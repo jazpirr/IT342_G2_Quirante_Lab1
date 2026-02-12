@@ -1,72 +1,80 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, UserPlus } from 'lucide-react';
-import '../css/Auth.css';
+import React, { useState } from "react";
+import { Eye, EyeOff, Mail, Lock, User, UserPlus } from "lucide-react";
+import "../css/Auth.css";
 
 const Register = ({ onSwitchToLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: ''
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
-  const [particles, setParticles] = useState([]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Create celebration particles
-    const newParticles = Array.from({ length: 30 }, (_, i) => ({
-      id: Date.now() + i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      delay: Math.random() * 0.5
-    }));
-    setParticles(newParticles);
-    
-    // Simulate success
-    setTimeout(() => {
-      alert('🎊 Account created successfully!');
-      setFormData({ name: '', email: '', password: '' });
-      setParticles([]);
-    }, 1500);
+
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    const [fName, lName] = formData.name.split(" ");
+
+    try {
+      const response = await fetch(
+        "http://localhost:8080/api/auth/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            fName: fName || "",
+            lName: lName || "",
+            email: formData.email,
+            password: formData.password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Account created successfully!");
+        onSwitchToLogin();
+      } else {
+        alert(data);
+      }
+    } catch (error) {
+      alert("Server error. Is backend running?");
+    }
   };
 
   return (
     <div className="auth-container">
-      {/* Animated background blobs */}
-      <div className="background-blob-1" />
-      <div className="background-blob-2" />
-
-      {/* Success particles */}
-      {particles.map(particle => (
-        <div
-          key={particle.id}
-          className="particle"
-          style={{
-            left: `${particle.x}%`,
-            top: `${particle.y}%`,
-            animationDelay: `${particle.delay}s`,
-          }}
-        />
-      ))}
-
-      {/* Main Card */}
+      <div className="background-blob-1"></div>
+      <div className="background-blob-2"></div>
+      
       <div className="glass-card">
-        {/* Header */}
         <div className="auth-header">
-          <h1 className="auth-title">Join Us!</h1>
-          <p className="auth-subtitle">Create your account to get started</p>
+          <h1 className="auth-title">Create Account</h1>
+          <p className="auth-subtitle">Join us today and get started</p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="auth-form">
-          {/* Name Field */}
           <div className="form-group">
             <div className="input-wrapper">
+              <div className="icon-wrapper">
+                <User size={20} />
+              </div>
               <input
                 type="text"
                 name="name"
@@ -76,35 +84,33 @@ const Register = ({ onSwitchToLogin }) => {
                 required
                 className="input-field"
               />
-              <div className="icon-wrapper">
-                <User size={20} />
-              </div>
             </div>
           </div>
 
-          {/* Email Field */}
           <div className="form-group">
             <div className="input-wrapper">
+              <div className="icon-wrapper">
+                <Mail size={20} />
+              </div>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Email Address"
+                placeholder="Email address"
                 required
                 className="input-field"
               />
-              <div className="icon-wrapper">
-                <Mail size={20} />
-              </div>
             </div>
           </div>
 
-          {/* Password Field */}
           <div className="form-group">
             <div className="input-wrapper">
+              <div className="icon-wrapper">
+                <Lock size={20} />
+              </div>
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
@@ -112,9 +118,6 @@ const Register = ({ onSwitchToLogin }) => {
                 required
                 className="input-field"
               />
-              <div className="icon-wrapper">
-                <Lock size={20} />
-              </div>
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -125,14 +128,36 @@ const Register = ({ onSwitchToLogin }) => {
             </div>
           </div>
 
-          {/* Submit Button */}
+          <div className="form-group">
+            <div className="input-wrapper">
+              <div className="icon-wrapper">
+                <Lock size={20} />
+              </div>
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Confirm Password"
+                required
+                className="input-field"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="toggle-password-btn"
+              >
+                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
+
           <button type="submit" className="submit-btn">
             Create Account
-            <UserPlus size={20} />
+            <UserPlus size={18} />
           </button>
         </form>
 
-        {/* Links */}
         <div className="auth-links">
           <div className="toggle-mode">
             Already have an account?
