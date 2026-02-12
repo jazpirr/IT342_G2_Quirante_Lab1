@@ -3,40 +3,38 @@ package com.quirante.backend.service;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.quirante.backend.entity.User;
 import com.quirante.backend.repository.UserRepository;
 
+@Service
 public class UserService {
+
     @Autowired
     private UserRepository urepo;
 
-    public UserService() {
-        super();
-    }
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
-
-    // CREATE
     public User createUser(User user) {
-        // NOTE: currently saving raw password (plaintext).
-        // For production, hash with BCrypt and store the hash instead.
+
+        if (urepo.findByEmail(user.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        String hashedPassword = passwordEncoder.encode(user.getPassword());
+        user.setPassword(hashedPassword);
+
         return urepo.save(user);
     }
 
-    // FIND BY EMAIL OR FULLNAME (LOGIN)
-    public Optional<User> findByEmailOrFullname(String value) {
-        Optional<User> user = urepo.findByEmailAddress(value);
-
-        if (user.isEmpty()) {
-            user = urepo.findByFullname(value);
-        }
-
-        return user;
+    public Optional<User> findByEmail(String email) {
+        return urepo.findByEmail(email);
     }
 
-    // helper to check raw password vs stored value (plaintext comparison here)
     public boolean checkPassword(User user, String rawPassword) {
-        if (user == null || rawPassword == null) return false;
-        return rawPassword.equals(user.getPassword());
+        return passwordEncoder.matches(rawPassword, user.getPassword());
     }
 }
