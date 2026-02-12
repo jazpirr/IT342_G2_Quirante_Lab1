@@ -1,25 +1,27 @@
 package com.quirante.backend.entity;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "users")
 public class User {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     private String fName;
     private String lName;
+
+    @Column(unique = true, nullable = false)
     private String email;
+
+    @Column(nullable = false)
     private String password;
 
-    public User() {
-        super();
-    }
+    public User() {}
 
-    public User(int id, String fName, String lName, String email, String password) {
+    public User(Integer id, String fName, String lName, String email, String password) {
         this.id = id;
         this.fName = fName;
         this.lName = lName;
@@ -27,11 +29,11 @@ public class User {
         this.password = password;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -66,7 +68,4 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-
-
-    
 }
