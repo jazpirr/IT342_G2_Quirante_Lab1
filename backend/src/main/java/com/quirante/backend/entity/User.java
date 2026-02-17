@@ -1,5 +1,7 @@
 package com.quirante.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -10,8 +12,12 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @JsonProperty("fName")
     private String fName;
+
+    @JsonProperty("lName")
     private String lName;
+    private String phone;
 
     @Column(unique = true, nullable = false)
     private String email;
@@ -67,5 +73,12 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getPhone() {
+         return phone; 
+    }
+    public void setPhone(String phone) {
+        this.phone = phone; 
     }
 }

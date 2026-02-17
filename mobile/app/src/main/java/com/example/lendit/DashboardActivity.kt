@@ -4,10 +4,12 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import androidx.appcompat.app.AppCompatActivity
+import com.example.lendit.backendcon.ApiClient
 import com.example.lendit.databinding.ActivityDashboardBinding
 
 class DashboardActivity : AppCompatActivity() {
@@ -65,10 +67,33 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun loadUserData() {
-        // TODO: Load actual user data from your backend/database
-        // For now, using placeholder data
-        binding.userNameText.text = "John Doe"
-        binding.borrowedCount.text = "5"
-        binding.lentCount.text = "3"
+        val prefs = getSharedPreferences("auth", MODE_PRIVATE)
+        val token = prefs.getString("jwt", null)
+
+        if (token == null) return
+
+        ApiClient.apiService.getCurrentUser("Bearer $token")
+            .enqueue(object : retrofit2.Callback<com.example.lendit.models.UserResponse> {
+                override fun onResponse(
+                    call: retrofit2.Call<com.example.lendit.models.UserResponse>,
+                    response: retrofit2.Response<com.example.lendit.models.UserResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        val user = response.body()
+
+                        Log.d("USER_API", response.body().toString())
+
+                        val fullName = "${user?.fName} ${user?.lName}"
+                        binding.userNameText.text = fullName
+                    }
+                }
+
+                override fun onFailure(
+                    call: retrofit2.Call<com.example.lendit.models.UserResponse>,
+                    t: Throwable
+                ) {
+                    // silently fail or show toast if you want
+                }
+            })
     }
 }

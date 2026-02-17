@@ -4,12 +4,14 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.lendit.auth.LoginActivity
+import com.example.lendit.backendcon.ApiClient
 import com.example.lendit.databinding.ActivityProfileBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
@@ -104,24 +106,46 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun performLogout() {
-        // TODO: Clear user session, preferences, tokens, etc.
-        // For example:
-        // SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE)
-        // prefs.edit().clear().apply()
+        val prefs = getSharedPreferences("auth", MODE_PRIVATE)
+        prefs.edit().clear().apply()
 
-        Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
-
-        // Navigate to Login screen and clear back stack
         val intent = Intent(this, LoginActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()
     }
 
+
     private fun loadUserData() {
-        // TODO: Load actual user data from your backend/database
-        // For now, using placeholder data
-        binding.userNameText.text = "John Doe"
-        binding.userEmailText.text = "john.doe@email.com"
+        val prefs = getSharedPreferences("auth", MODE_PRIVATE)
+        val token = prefs.getString("jwt", null)
+
+        if (token == null) return
+
+        ApiClient.apiService.getCurrentUser("Bearer $token")
+            .enqueue(object : retrofit2.Callback<com.example.lendit.models.UserResponse> {
+                override fun onResponse(
+                    call: retrofit2.Call<com.example.lendit.models.UserResponse>,
+                    response: retrofit2.Response<com.example.lendit.models.UserResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        val user = response.body()
+
+                        Log.d("USER_API", response.body().toString())
+
+                        val fullName = "${user?.fName} ${user?.lName}"
+
+                        binding.userNameText.text = fullName
+                        binding.userEmailText.text = user?.email
+                    }
+                }
+
+                override fun onFailure(
+                    call: retrofit2.Call<com.example.lendit.models.UserResponse>,
+                    t: Throwable
+                ) {
+                    Toast.makeText(this@ProfileActivity, "Failed to load profile", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 }

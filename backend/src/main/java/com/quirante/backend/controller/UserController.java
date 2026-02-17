@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.quirante.backend.entity.User;
+import com.quirante.backend.security.AuthResponse;
+import com.quirante.backend.security.JwtUtil;
 import com.quirante.backend.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
@@ -18,6 +20,9 @@ public class UserController {
 
     @Autowired
     private UserService userv;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User newUser) {
@@ -31,7 +36,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody User loginData, HttpSession session) {
+    public ResponseEntity<?> login(@RequestBody User loginData) {
 
         Optional<User> userOpt = userv.findByEmail(loginData.getEmail());
 
@@ -45,12 +50,14 @@ public class UserController {
             return ResponseEntity.status(401).body("Invalid password");
         }
 
-        session.setAttribute("userId", user.getId());
+        String token = jwtUtil.generateToken(user.getId());
 
         user.setPassword(null);
-        return ResponseEntity.ok(user);
-    }
 
+        return ResponseEntity.ok(
+            new AuthResponse(token, user)
+        );
+    }
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpSession session) {
         session.invalidate();
