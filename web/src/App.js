@@ -3,10 +3,12 @@ import { LogOut, Mail, User } from "lucide-react";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import "./css/Home.css";
+import "./css/PageTransition.css";
 
 function App() {
   const [showLogin, setShowLogin] = useState(true);
   const [user, setUser] = useState(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Check session on load
   useEffect(() => {
@@ -29,13 +31,29 @@ function App() {
     setUser(null);
   };
 
+  const switchToRegister = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setShowLogin(false);
+      setIsTransitioning(false);
+    }, 300);
+  };
+
+  const switchToLogin = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setShowLogin(true);
+      setIsTransitioning(false);
+    }, 300);
+  };
+
   // Dashboard View
   if (user) {
     return (
       <div className="dashboard-container">
         <div className="dashboard-blob-1"></div>
         <div className="dashboard-blob-2"></div>
-        
+
         <div className="dashboard-card">
           <div className="dashboard-header">
             <h1 className="dashboard-title">Welcome, {user.fName}! 👋</h1>
@@ -48,9 +66,11 @@ function App() {
                 <User size={20} />
                 Full Name:
               </span>
-              <span className="info-value">{user.fName} {user.lName}</span>
+              <span className="info-value">
+                {user.fName} {user.lName}
+              </span>
             </div>
-            
+
             <div className="info-row">
               <span className="info-label">
                 <Mail size={20} />
@@ -70,14 +90,15 @@ function App() {
   }
 
   return (
-    <div>
+    <div className={`page-transition-wrapper ${isTransitioning ? "transitioning" : ""}`}>
       {showLogin ? (
-        <Login
-          setUser={setUser}
-          onSwitchToRegister={() => setShowLogin(false)}
-        />
+        <div key="login" className="page-content">
+          <Login setUser={setUser} onSwitchToRegister={switchToRegister} />
+        </div>
       ) : (
-        <Register onSwitchToLogin={() => setShowLogin(true)} />
+        <div key="register" className="page-content">
+          <Register onSwitchToLogin={switchToLogin} />
+        </div>
       )}
     </div>
   );
