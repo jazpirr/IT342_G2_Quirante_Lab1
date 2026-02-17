@@ -1,125 +1,158 @@
-/* Dashboard Specific Styles */
-
+/* Dashboard Container - Green Theme */
 .dashboard-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #F0FFF0 0%, #FFFFFF 50%, #E8F5E9 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   padding: 20px;
   position: relative;
   overflow: hidden;
 }
 
+/* Dashboard Background Blobs */
+.dashboard-blob-1 {
+  position: absolute;
+  top: 15%;
+  left: 15%;
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, rgba(175, 239, 175, 0.35) 0%, rgba(175, 239, 175, 0.1) 70%);
+  border-radius: 50%;
+  filter: blur(60px);
+  animation: float 25s ease-in-out infinite;
+}
+
+.dashboard-blob-2 {
+  position: absolute;
+  bottom: 15%;
+  right: 15%;
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(circle, rgba(9, 121, 105, 0.3) 0%, rgba(9, 121, 105, 0.1) 70%);
+  border-radius: 50%;
+  filter: blur(70px);
+  animation: float 20s ease-in-out infinite reverse;
+}
+
+/* Dashboard Card */
 .dashboard-card {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1),
-              0 4px 16px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(9, 121, 105, 0.1);
+  box-shadow: 0 12px 40px rgba(9, 121, 105, 0.15),
+              0 8px 24px rgba(0, 0, 0, 0.05);
   width: 100%;
   max-width: 600px;
-  border-radius: 28px;
-  padding: 56px 48px;
+  border-radius: 32px;
+  padding: 48px 40px;
   animation: slideIn 0.7s ease-out;
   transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
 .dashboard-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2),
-              0 8px 24px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 60px rgba(9, 121, 105, 0.2),
+              0 12px 32px rgba(0, 0, 0, 0.08);
 }
 
+/* Dashboard Header */
 .dashboard-header {
   text-align: center;
   margin-bottom: 40px;
+  padding-bottom: 32px;
+  border-bottom: 2px solid rgba(9, 121, 105, 0.1);
 }
 
 .dashboard-title {
-  font-size: 36px;
-  font-weight: 700;
-  color: white;
+  font-size: 32px;
+  font-weight: 900;
+  color: #1A3A2E;
   margin: 0 0 12px 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #097969 0%, #5F9EA0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .dashboard-subtitle {
   font-size: 16px;
-  color: rgba(255, 255, 255, 0.95);
+  color: #4A6A5E;
   margin: 0;
-  font-weight: 300;
-  letter-spacing: 0.3px;
+  font-weight: 400;
 }
 
+/* User Info Card */
 .user-info-card {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-}
-
-.user-info-card:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px);
+  background: linear-gradient(135deg, #F8FFF8 0%, #FFFFFF 100%);
+  border: 2px solid #E0F2E9;
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 16px rgba(9, 121, 105, 0.08);
 }
 
 .info-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  color: white;
-  font-size: 16px;
-  margin-bottom: 16px;
-  transition: all 0.3s ease;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(9, 121, 105, 0.08);
 }
 
 .info-row:last-child {
-  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
-.info-row:hover {
-  transform: translateX(5px);
+.info-row:first-child {
+  padding-top: 0;
 }
 
 .info-label {
-  font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #4A6A5E;
+}
+
+.info-label svg {
+  color: #097969;
 }
 
 .info-value {
-  font-weight: 300;
-  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1A3A2E;
+  text-align: right;
 }
 
+/* Logout Button */
 .logout-btn {
   width: 100%;
   padding: 18px;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 800;
   color: white;
   border: none;
-  border-radius: 14px;
+  border-radius: 18px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
-  transition: all 0.4s ease;
+  background: linear-gradient(135deg, #E53935 0%, #D32F2F 50%, #C62828 100%);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
-  font-family: 'Poppins', sans-serif;
+  box-shadow: 0 6px 20px rgba(211, 47, 47, 0.3);
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.5px;
 }
 
 .logout-btn::before {
@@ -129,13 +162,13 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
   transition: left 0.6s;
 }
 
 .logout-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 30px rgba(220, 38, 38, 0.5);
+  box-shadow: 0 12px 36px rgba(211, 47, 47, 0.4);
 }
 
 .logout-btn:hover::before {
@@ -144,65 +177,18 @@
 
 .logout-btn:active {
   transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+  box-shadow: 0 6px 20px rgba(211, 47, 47, 0.35);
 }
 
-/* Background Blobs (reused from Auth.css but defined here for dashboard) */
-.dashboard-blob-1 {
-  position: absolute;
-  top: 10%;
-  left: 10%;
-  width: 350px;
-  height: 350px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 50%;
-  filter: blur(70px);
-  animation: float 8s ease-in-out infinite;
-}
-
-.dashboard-blob-2 {
-  position: absolute;
-  bottom: 10%;
-  right: 10%;
-  width: 450px;
-  height: 450px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 50%;
-  filter: blur(90px);
-  animation: float 10s ease-in-out infinite reverse;
-}
-
-/* Animations */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes float {
-  0%, 100% { 
-    transform: translate(0, 0) rotate(0deg); 
-  }
-  50% { 
-    transform: translate(30px, 30px) rotate(180deg); 
-  }
-}
-
-/* Responsive Design */
-@media (max-width: 480px) {
+/* Responsive */
+@media (max-width: 640px) {
   .dashboard-card {
-    padding: 40px 32px;
+    padding: 36px 28px;
     max-width: 100%;
-    border-radius: 24px;
   }
 
   .dashboard-title {
-    font-size: 28px;
+    font-size: 26px;
   }
 
   .dashboard-subtitle {
@@ -214,18 +200,12 @@
   }
 
   .info-row {
-    font-size: 14px;
-    gap: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 
-  .logout-btn {
-    padding: 16px;
-    font-size: 15px;
-  }
-
-  .dashboard-blob-1,
-  .dashboard-blob-2 {
-    width: 250px;
-    height: 250px;
+  .info-value {
+    text-align: left;
   }
 }
