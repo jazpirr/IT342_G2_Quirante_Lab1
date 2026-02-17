@@ -11,8 +11,14 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
-import com.example.lendit.R
+import com.example.lendit.DashboardActivity
+import com.example.lendit.backendcon.ApiClient
 import com.example.lendit.databinding.ActivityLoginBinding
+import com.example.lendit.models.AuthResponse
+import com.example.lendit.models.LoginRequest
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class LoginActivity : AppCompatActivity() {
 
@@ -29,12 +35,10 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Play animations every time the activity becomes visible
         setupAnimations()
     }
 
     private fun setupAnimations() {
-        // Animate card entrance with bounce
         binding.loginCard.apply {
             alpha = 0f
             translationY = 120f
@@ -50,7 +54,6 @@ class LoginActivity : AppCompatActivity() {
                 .start()
         }
 
-        // Animate logo with rotation and scale
         binding.logoIcon.apply {
             scaleX = 0f
             scaleY = 0f
@@ -65,10 +68,8 @@ class LoginActivity : AppCompatActivity() {
                 .start()
         }
 
-        // Pulse logo glow
         animateLogoGlow()
 
-        // Slide in accent bar
         binding.accentBar.apply {
             alpha = 0f
             scaleX = 0f
@@ -80,12 +81,10 @@ class LoginActivity : AppCompatActivity() {
                 .start()
         }
 
-        // Rotate background blobs continuously
         animateBlob(binding.blobTop, 22000L)
         animateBlob(binding.blobBottom, 28000L, reverse = true)
         animateBlob(binding.blobMiddle, 18000L)
 
-        // Float particles
         animateParticle(binding.particle1, 4000L, 30f)
         animateParticle(binding.particle2, 5000L, 40f)
         animateParticle(binding.particle3, 3500L, 35f)
@@ -122,32 +121,26 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun setupValidation() {
-        // Email validation
         binding.emailInput.addTextChangedListener {
             binding.emailLayout.error = null
         }
 
-        // Password validation
         binding.passwordInput.addTextChangedListener {
             binding.passwordLayout.error = null
         }
     }
 
     private fun setupClickListeners() {
-        // Login button
         binding.loginButton.setOnClickListener {
             if (validateInputs()) {
                 performLogin()
             }
         }
 
-        // Forgot password
         binding.forgotPassword.setOnClickListener {
-            // Navigate to forgot password screen
             Toast.makeText(this, "Forgot password feature coming soon", Toast.LENGTH_SHORT).show()
         }
 
-        // Register link
         binding.registerLink.setOnClickListener {
             val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
@@ -161,7 +154,6 @@ class LoginActivity : AppCompatActivity() {
 
         var isValid = true
 
-        // Validate email
         if (email.isEmpty()) {
             binding.emailLayout.error = "Email is required"
             shakeView(binding.emailLayout)
@@ -172,7 +164,6 @@ class LoginActivity : AppCompatActivity() {
             isValid = false
         }
 
-        // Validate password
         if (password.isEmpty()) {
             binding.passwordLayout.error = "Password is required"
             shakeView(binding.passwordLayout)
@@ -187,7 +178,10 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun shakeView(view: View) {
-        val animator = ObjectAnimator.ofFloat(view, View.TRANSLATION_X, 0f, 25f, -25f, 25f, -25f, 15f, -15f, 6f, -6f, 0f)
+        val animator = ObjectAnimator.ofFloat(
+            view, View.TRANSLATION_X,
+            0f, 25f, -25f, 25f, -25f, 15f, -15f, 6f, -6f, 0f
+        )
         animator.duration = 500
         animator.start()
     }
@@ -196,23 +190,40 @@ class LoginActivity : AppCompatActivity() {
         val email = binding.emailInput.text.toString().trim()
         val password = binding.passwordInput.text.toString()
 
-        // Show loading
         showLoading(true)
 
-        // Simulate API call
-        binding.root.postDelayed({
-            // TODO: Implement actual authentication
-            showLoading(false)
+        val request = LoginRequest(email, password)
 
-            // Example success
-            Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
+        ApiClient.apiService.login(request).enqueue(object : Callback<AuthResponse> {
+            override fun onResponse(
+                call: Call<AuthResponse>,
+                response: Response<AuthResponse>
+            ) {
+                showLoading(false)
 
-            // Navigate to dashboard
-            val intent = Intent(this, com.example.lendit.DashboardActivity::class.java)
-            startActivity(intent)
-            finish()
+                if (response.isSuccessful) {
+                    val authResponse = response.body()
+                    val token = authResponse?.token
 
-        }, 2000)
+                    // Save JWT token
+                    val prefs = getSharedPreferences("auth", MODE_PRIVATE)
+                    prefs.edit().putString("jwt", token).apply()
+
+                    Toast.makeText(this@LoginActivity, "Login successful!", Toast.LENGTH_SHORT).show()
+
+                    val intent = Intent(this@LoginActivity, DashboardActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                } else {
+                    Toast.makeText(this@LoginActivity, "Invalid email or password", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
+                showLoading(false)
+                Toast.makeText(this@LoginActivity, "Server error: ${t.message}", Toast.LENGTH_LONG).show()
+            }
+        })
     }
 
     private fun showLoading(show: Boolean) {

@@ -12,8 +12,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.example.lendit.R
+import com.example.lendit.backendcon.ApiClient
 import com.example.lendit.databinding.ActivityRegisterBinding
+import com.example.lendit.models.RegisterRequest
+import com.example.lendit.models.UserResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -30,12 +35,10 @@ class RegisterActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Play animations every time the activity becomes visible
         setupAnimations()
     }
 
     private fun setupAnimations() {
-        // Animate card entrance
         binding.registerCard.apply {
             alpha = 0f
             translationY = 120f
@@ -51,7 +54,6 @@ class RegisterActivity : AppCompatActivity() {
                 .start()
         }
 
-        // Animate logo with bounce
         binding.logoIcon.apply {
             scaleX = 0f
             scaleY = 0f
@@ -66,10 +68,8 @@ class RegisterActivity : AppCompatActivity() {
                 .start()
         }
 
-        // Pulse logo glow
         animateLogoGlow()
 
-        // Slide in accent bar
         binding.accentBar.apply {
             alpha = 0f
             scaleX = 0f
@@ -81,12 +81,10 @@ class RegisterActivity : AppCompatActivity() {
                 .start()
         }
 
-        // Rotate background blobs
         animateBlob(binding.blobTopRight, 24000L)
         animateBlob(binding.blobBottomLeft, 30000L, reverse = true)
         animateBlob(binding.blobMiddleRight, 20000L)
 
-        // Float particles
         animateParticle(binding.particle1, 4500L, 35f)
         animateParticle(binding.particle2, 3800L, 30f)
     }
@@ -96,8 +94,8 @@ class RegisterActivity : AppCompatActivity() {
         scaleAnimator.duration = 2000
         scaleAnimator.repeatCount = ValueAnimator.INFINITE
         scaleAnimator.interpolator = AccelerateDecelerateInterpolator()
-        scaleAnimator.addUpdateListener { animation ->
-            val scale = animation.animatedValue as Float
+        scaleAnimator.addUpdateListener {
+            val scale = it.animatedValue as Float
             binding.logoGlow.scaleX = scale
             binding.logoGlow.scaleY = scale
         }
@@ -122,190 +120,101 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun setupValidation() {
-        // Real-time validation
-        binding.emailInput.addTextChangedListener {
-            binding.emailLayout.error = null
-        }
-
-        binding.passwordInput.addTextChangedListener {
-            binding.passwordLayout.error = null
-            updatePasswordStrength(it.toString())
-        }
-
-        binding.confirmPasswordInput.addTextChangedListener {
-            binding.confirmPasswordLayout.error = null
-        }
-
-        binding.nameInput.addTextChangedListener {
-            binding.nameLayout.error = null
-        }
-    }
-
-    private fun updatePasswordStrength(password: String) {
-        // Visual feedback for password strength
-        val strength = calculatePasswordStrength(password)
-        // You can update a progress bar or text indicator here
-    }
-
-    private fun calculatePasswordStrength(password: String): Int {
-        var strength = 0
-        if (password.length >= 8) strength++
-        if (password.any { it.isUpperCase() }) strength++
-        if (password.any { it.isLowerCase() }) strength++
-        if (password.any { it.isDigit() }) strength++
-        if (password.any { !it.isLetterOrDigit() }) strength++
-        return strength
+        binding.emailInput.addTextChangedListener { binding.emailLayout.error = null }
+        binding.passwordInput.addTextChangedListener { binding.passwordLayout.error = null }
+        binding.confirmPasswordInput.addTextChangedListener { binding.confirmPasswordLayout.error = null }
+        binding.nameInput.addTextChangedListener { binding.nameLayout.error = null }
     }
 
     private fun setupClickListeners() {
-        // Register button
         binding.registerButton.setOnClickListener {
             if (validateAllInputs()) {
                 performRegistration()
             }
         }
 
-        // Terms and conditions
-        binding.termsText.setOnClickListener {
-            showTermsDialog()
-        }
-
-        // Login link
         binding.loginLink.setOnClickListener {
             finish()
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        }
+
+        binding.termsText.setOnClickListener {
+            showTermsDialog()
         }
     }
 
     private fun validateAllInputs(): Boolean {
         val name = binding.nameInput.text.toString().trim()
         val email = binding.emailInput.text.toString().trim()
-        val phone = binding.phoneInput.text.toString().trim()
         val password = binding.passwordInput.text.toString()
         val confirmPassword = binding.confirmPasswordInput.text.toString()
-        val termsAccepted = binding.termsCheckbox.isChecked
 
         var isValid = true
 
-        // Validate name
         if (name.isEmpty()) {
             binding.nameLayout.error = "Full name is required"
-            shakeView(binding.nameLayout)
-            isValid = false
-        } else if (name.length < 3) {
-            binding.nameLayout.error = "Name must be at least 3 characters"
-            shakeView(binding.nameLayout)
             isValid = false
         }
 
-        // Validate email
-        if (email.isEmpty()) {
-            binding.emailLayout.error = "Email is required"
-            shakeView(binding.emailLayout)
-            isValid = false
-        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            binding.emailLayout.error = "Please enter a valid email"
-            shakeView(binding.emailLayout)
+        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            binding.emailLayout.error = "Valid email required"
             isValid = false
         }
 
-        // Validate phone (optional but if provided, must be valid)
-        if (phone.isNotEmpty() && !Patterns.PHONE.matcher(phone).matches()) {
-            binding.phoneLayout.error = "Please enter a valid phone number"
-            shakeView(binding.phoneLayout)
+        if (password.length < 8) {
+            binding.passwordLayout.error = "Min 8 characters"
             isValid = false
         }
 
-        // Validate password
-        if (password.isEmpty()) {
-            binding.passwordLayout.error = "Password is required"
-            shakeView(binding.passwordLayout)
-            isValid = false
-        } else if (password.length < 8) {
-            binding.passwordLayout.error = "Password must be at least 8 characters"
-            shakeView(binding.passwordLayout)
-            isValid = false
-        } else if (!isPasswordStrong(password)) {
-            binding.passwordLayout.error = "Password must contain letters and numbers"
-            shakeView(binding.passwordLayout)
-            isValid = false
-        }
-
-        // Validate confirm password
-        if (confirmPassword.isEmpty()) {
-            binding.confirmPasswordLayout.error = "Please confirm your password"
-            shakeView(binding.confirmPasswordLayout)
-            isValid = false
-        } else if (password != confirmPassword) {
+        if (password != confirmPassword) {
             binding.confirmPasswordLayout.error = "Passwords do not match"
-            shakeView(binding.confirmPasswordLayout)
-            isValid = false
-        }
-
-        // Validate terms acceptance
-        if (!termsAccepted) {
-            Toast.makeText(this, "Please accept the terms and conditions", Toast.LENGTH_SHORT).show()
-            shakeView(binding.termsCheckbox)
             isValid = false
         }
 
         return isValid
     }
 
-    private fun isPasswordStrong(password: String): Boolean {
-        val hasLetter = password.any { it.isLetter() }
-        val hasDigit = password.any { it.isDigit() }
-        return hasLetter && hasDigit
-    }
-
-    private fun shakeView(view: View) {
-        val animator = ObjectAnimator.ofFloat(view, View.TRANSLATION_X, 0f, 25f, -25f, 25f, -25f, 15f, -15f, 6f, -6f, 0f)
-        animator.duration = 500
-        animator.start()
-    }
-
     private fun performRegistration() {
-        val name = binding.nameInput.text.toString().trim()
+        val fullName = binding.nameInput.text.toString().trim()
+        val parts = fullName.split(" ")
+        val fName = parts.first()
+        val lName = parts.drop(1).joinToString(" ")
+
         val email = binding.emailInput.text.toString().trim()
-        val phone = binding.phoneInput.text.toString().trim()
         val password = binding.passwordInput.text.toString()
 
-        // Show loading
         showLoading(true)
 
-        // Simulate API call
-        binding.root.postDelayed({
-            // TODO: Implement actual registration API call
-            showLoading(false)
+        val request = RegisterRequest(fName, lName, email, password)
 
-            // Show success message
-            MaterialAlertDialogBuilder(this)
-                .setTitle("🎉 Registration Successful!")
-                .setMessage("Your account has been created successfully! Welcome to LendIT.")
-                .setPositiveButton("Continue") { dialog, _ ->
-                    dialog.dismiss()
-                    // Navigate to login or main activity
-                    val intent = Intent(this, LoginActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    startActivity(intent)
-                    finish()
+        ApiClient.apiService.register(request).enqueue(object : Callback<UserResponse> {
+            override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
+                showLoading(false)
+
+                if (response.isSuccessful) {
+                    MaterialAlertDialogBuilder(this@RegisterActivity)
+                        .setTitle("🎉 Registration Successful!")
+                        .setMessage("Your account has been created successfully!")
+                        .setPositiveButton("Login") { _, _ ->
+                            startActivity(Intent(this@RegisterActivity, LoginActivity::class.java))
+                            finish()
+                        }
+                        .show()
+                } else {
+                    Toast.makeText(this@RegisterActivity, "Email already exists", Toast.LENGTH_LONG).show()
                 }
-                .setCancelable(false)
-                .show()
+            }
 
-        }, 2000)
+            override fun onFailure(call: Call<UserResponse>, t: Throwable) {
+                showLoading(false)
+                Toast.makeText(this@RegisterActivity, "Server error: ${t.message}", Toast.LENGTH_LONG).show()
+            }
+        })
     }
 
     private fun showTermsDialog() {
         MaterialAlertDialogBuilder(this)
             .setTitle("Terms and Conditions")
-            .setMessage("Welcome to LendIT!\n\n" +
-                    "By using our services, you agree to:\n\n" +
-                    "1. Provide accurate information\n" +
-                    "2. Respect other users\n" +
-                    "3. Comply with all applicable laws\n" +
-                    "4. Protect your account credentials\n\n" +
-                    "Please read our full Terms and Privacy Policy on our website.")
+            .setMessage("By using LendIT, you agree to provide accurate information and follow community rules.")
             .setPositiveButton("I Understand") { dialog, _ ->
                 dialog.dismiss()
                 binding.termsCheckbox.isChecked = true

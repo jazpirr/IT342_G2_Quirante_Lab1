@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.quirante.backend.entity.User;
 import com.quirante.backend.repository.UserRepository;
+import com.quirante.backend.security.JwtUtil;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -19,14 +20,24 @@ public class UserProfileController {
     @Autowired
     private UserRepository userRepo;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(HttpSession session) {
+    public ResponseEntity<?> getCurrentUser(
+            @RequestHeader("Authorization") String authHeader) {
 
-        Integer userId = (Integer) session.getAttribute("userId");
-
-        if (userId == null) {
-            return ResponseEntity.status(401).body("Not logged in");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body("Missing token");
         }
+
+        String token = authHeader.substring(7);
+
+        if (!jwtUtil.validateToken(token)) {
+            return ResponseEntity.status(401).body("Invalid token");
+        }
+
+        Integer userId = jwtUtil.extractUserId(token);
 
         Optional<User> userOpt = userRepo.findById(userId);
 
